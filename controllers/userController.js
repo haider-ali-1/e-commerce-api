@@ -43,4 +43,8 @@ const updateUserPassword = asyncErrorHandler(async (req, res, next) => {
     .json({ status: 'success', data: { user: req.user } });
 });
 
+const updateUser = asyncErrorHandler(async (req, res, next) => {
+  const { name, email } = req.body;
+});
+
 export { getAllUsers, getSingleUser, showCurrentUser, updateUserPassword };
