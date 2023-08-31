@@ -12,11 +12,11 @@ import { createPayloadUser } from '../utils/user-payload.js';
 const register = asyncErrorHandler(async (req, res, next) => {
   const { name, email, password, confirmPassword } = req.body;
 
-  if (password !== confirmPassword)
-    throw new BadRequestError('confirm password must match with password');
+  // if (password !== confirmPassword)
+  //   throw new BadRequestError('confirm password must match with password');
 
-  const userExist = await User.findOne({ email });
-  if (userExist) throw new ConflictError(`user already exist`);
+  // const userExist = await User.findOne({ email });
+  // if (userExist) throw new ConflictError(`user already exist`);
 
   const isFirstUser = (await User.countDocuments({})) === 0;
   const role = isFirstUser ? 'admin' : 'user';

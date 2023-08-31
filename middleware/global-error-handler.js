@@ -21,7 +21,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
   else if (err.code === 11000) {
     statusCode = 409;
     const field = Object.keys(err.keyPattern)[0];
-    message = `${field} already taken please try another`;
+    errorMessage = `${field} already taken please try another`;
   }
 
   // main error response
