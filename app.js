@@ -8,6 +8,7 @@ import { errorHandlerMiddleware } from './middleware/global-error-handler.js';
 import { notFoundMiddleware } from './middleware/not-found.js';
 import authRouter from './routes/authRoutes.js';
 import userRouter from './routes/userRoutes.js';
+import { NotFoundError } from './utils/custom-errors.js';
 
 const app = express();
 
@@ -24,7 +25,9 @@ app.get('/', async (req, res, next) => {
   // console.log(decoded);
 });
 
-app.all('*', notFoundMiddleware);
+app.all('*', (req, res) => {
+  throw new NotFoundError(`cannot find ${req.originalUrl} on the server`);
+});
 app.use(errorHandlerMiddleware);
 
 export { app };

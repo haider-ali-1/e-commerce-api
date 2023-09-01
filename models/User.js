@@ -22,7 +22,7 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: [true, 'password is required'],
-      minlength: 6,
+      minlength: 8,
     },
 
     role: {

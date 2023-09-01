@@ -1,16 +1,16 @@
 import { User } from '../models/User.js';
 import { asyncErrorHandler } from '../middleware/async-error-handler.js';
 import { StatusCodes } from 'http-status-codes';
-import { attachCookiesToResponse, generateJwtToken } from '../utils/jwt.js';
 import {
-  BadRequestError,
-  ConflictError,
-  UnathorizedError,
-} from '../utils/custom-errors.js';
-import { createPayloadUser } from '../utils/user-payload.js';
+  createPayloadUser,
+  generateJwtToken,
+  attachCookiesToResponse,
+} from '../utils/auth.js';
+
+import { BadRequestError, UnathorizedError } from '../utils/custom-errors.js';
 
 const register = asyncErrorHandler(async (req, res, next) => {
-  const { name, email, password, confirmPassword } = req.body;
+  const { name, email, password } = req.body;
 
   // if (password !== confirmPassword)
   //   throw new BadRequestError('confirm password must match with password');
@@ -18,7 +18,7 @@ const register = asyncErrorHandler(async (req, res, next) => {
   // const userExist = await User.findOne({ email });
   // if (userExist) throw new ConflictError(`user already exist`);
 
-  const isFirstUser = (await User.countDocuments({})) === 0;
+  const isFirstUser = (await User.countDocuments()) === 0;
   const role = isFirstUser ? 'admin' : 'user';
 
   const newUser = await User.create({ name, email, password, role });

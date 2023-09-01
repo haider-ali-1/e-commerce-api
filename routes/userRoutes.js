@@ -4,6 +4,7 @@ import {
   getAllUsers,
   getSingleUser,
   showCurrentUser,
+  updateUser,
   updateUserPassword,
 } from '../controllers/userController.js';
 
@@ -14,20 +15,29 @@ import {
 
 const router = express.Router();
 
-router
-  .route('/') //
-  .get(authenticateUser, authorizePermission('admin'), getAllUsers);
+// Public Routes
+router.use(authenticateUser);
+router.route('/profile').get(showCurrentUser).patch(updateUser);
+router.route('/update-password').patch(updateUserPassword);
+router.route('/:id').get(getSingleUser);
 
-router
-  .route('/profile') //
-  .get(authenticateUser, showCurrentUser);
+router.use(authorizePermission('admin'));
+router.route('/').get(getAllUsers);
 
-router
-  .route('/:id') //
-  .get(getSingleUser);
+// router
+//   .route('/') //
+//   .get(authenticateUser, authorizePermission('admin'), getAllUsers);
 
-router
-  .route('/update-password') //
-  .patch(authenticateUser, updateUserPassword);
+// router
+//   .route('/profile') //
+//   .get(authenticateUser, showCurrentUser);
+
+// router
+//   .route('/:id') //
+//   .get(getSingleUser);
+
+// router
+//   .route('/update-password') //
+//   .patch(authenticateUser, updateUserPassword);
 
 export default router;

@@ -1,5 +1,5 @@
 import { ForbiddenError, UnathorizedError } from '../utils/custom-errors.js';
-import { isValidToken } from '../utils/jwt.js';
+import { isValidToken } from '../utils/auth.js';
 import { asyncErrorHandler } from './async-error-handler.js';
 
 const authenticateUser = asyncErrorHandler(async (req, res, next) => {

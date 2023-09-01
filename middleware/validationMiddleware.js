@@ -56,4 +56,14 @@ const validateRegisterUserInput = validate([
     .custom(confirmPasswordMatch),
 ]);
 
-export { validateRegisterUserInput };
+const validateLoginUserInput = validate([
+  body('email')
+    .notEmpty()
+    .withMessage('email is required')
+    .isEmail()
+    .withMessage('invalid email format'),
+
+  body('password').notEmpty().withMessage('password is required'),
+]);
+
+export { validateRegisterUserInput, validateLoginUserInput };

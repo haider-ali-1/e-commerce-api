@@ -1,4 +1,4 @@
-import { generateCustomErrorStack } from '../utils/custom-error-stack.js';
+import { generateCustomErrorStack } from '../utils/custom-errors.js';
 
 // error will caught here first
 const errorHandlerMiddleware = (err, req, res, next) => {

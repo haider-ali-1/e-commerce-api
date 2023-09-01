@@ -2,6 +2,11 @@ import { asyncErrorHandler } from '../middleware/async-error-handler.js';
 import { User } from '../models/User.js';
 import { StatusCodes } from 'http-status-codes';
 import { BadRequestError, UnathorizedError } from '../utils/custom-errors.js';
+import {
+  createPayloadUser,
+  generateJwtToken,
+  attachCookiesToResponse,
+} from '../utils/auth.js';
 
 const getAllUsers = asyncErrorHandler(async (req, res, next) => {
   const users = await User.find({ role: 'user' }).select('-password');
@@ -11,6 +16,14 @@ const getAllUsers = asyncErrorHandler(async (req, res, next) => {
 const getSingleUser = asyncErrorHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id);
   if (!user) throw new BadRequestError(`cannot found user with id: ${id}`);
+
+  const checkPermissions = (reqUser, resourseUserId) => {
+    if (reqUser.role === 'admin') return;
+    if (reqUser.userId === resourseUserId.toString()) return;
+    throw new UnathorizedError('you dont have permission');
+  };
+  checkPermissions(req.user, user._id);
+
   res.status(StatusCodes.OK).json({ status: 'success', data: { user } });
 });
 
@@ -45,6 +58,26 @@ const updateUserPassword = asyncErrorHandler(async (req, res, next) => {
 
 const updateUser = asyncErrorHandler(async (req, res, next) => {
   const { name, email } = req.body;
+
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user.userId,
+    { name, email },
+    { new: true, runValidators: true }
+  );
+
+  const payload = createPayloadUser(updatedUser);
+  const token = generateJwtToken(payload);
+  attachCookiesToResponse(res, token);
+
+  res
+    .status(StatusCodes.OK)
+    .json({ status: 'success', data: { user: req.user } });
 });
 
-export { getAllUsers, getSingleUser, showCurrentUser, updateUserPassword };
+export {
+  getAllUsers,
+  getSingleUser,
+  showCurrentUser,
+  updateUser,
+  updateUserPassword,
+};

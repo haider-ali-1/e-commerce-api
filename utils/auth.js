@@ -1,5 +1,9 @@
 import jwt from 'jsonwebtoken';
 
+const createPayloadUser = (user) => {
+  return { userId: user._id, name: user.name, role: user.role };
+};
+
 const generateJwtToken = (payload) => {
   return jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES,
@@ -20,4 +24,9 @@ const attachCookiesToResponse = (res, token) => {
   });
 };
 
-export { generateJwtToken, isValidToken, attachCookiesToResponse };
+export {
+  createPayloadUser,
+  generateJwtToken,
+  isValidToken,
+  attachCookiesToResponse,
+};
