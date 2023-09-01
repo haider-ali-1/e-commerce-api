@@ -46,7 +46,7 @@ const updateUserPassword = asyncErrorHandler(async (req, res, next) => {
   const user = await User.findById(req.user.userId);
   const passwordMatch = await user.comparePassword(oldPassword);
 
-  if (!passwordMatch) throw new UnathorizedError('invalid credentials');
+  if (!passwordMatch) throw new UnathorizedError('incorrect email or password');
 
   user.password = newPassword;
   await user.save();
