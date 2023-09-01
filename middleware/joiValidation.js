@@ -1,6 +1,5 @@
 import Joi from 'joi';
 import { BadRequestError } from '../utils/custom-errors.js';
-import { User } from '../models/User.js';
 
 const commonMessages = {
   'string.base': '{#label} shoule be a string',
@@ -25,7 +24,7 @@ const loginUserSchema = Joi.object({
 });
 
 const validate = (validationSchema) => async (req, res, next) => {
-  const { error, value } = validationSchema.validate(req.body);
+  const { error } = validationSchema.validate(req.body);
   if (error) {
     const errorMessage = error.details.map((err) => err.message).join('. ');
     next(new BadRequestError(errorMessage));
