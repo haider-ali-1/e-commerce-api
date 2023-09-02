@@ -16,7 +16,7 @@ const app = express();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-console.log(__dirname);
+// console.log(__dirname);
 
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 app.use(express.json());
