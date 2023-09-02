@@ -66,4 +66,22 @@ const validateLoginUserInput = validate([
   body('password').notEmpty().withMessage('password is required'),
 ]);
 
+// Add Product Validation
+
+const validateProductRegister = validate([
+  body('name')
+    .isString()
+    .withMessage('product name should be a string')
+    .notEmpty()
+    .withMessage('name is required')
+    .isLength({ min: 3, max: 100 })
+    .withMessage('product name must be between 3 to 100 characters'),
+
+  body('price')
+    .isNumeric()
+    .withMessage('price should be a number')
+    .notEmpty()
+    .withMessage('price is required'),
+]);
+
 export { validateRegisterUserInput, validateLoginUserInput };

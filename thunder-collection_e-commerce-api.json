@@ -1,0 +1,163 @@
+{
+    "client": "Thunder Client",
+    "collectionName": "e-commerce-api",
+    "dateExported": "2023-09-02T11:29:25.035Z",
+    "version": "1.1",
+    "folders": [
+        {
+            "_id": "59983fa2-936e-4af2-9ee6-826472b6c350",
+            "name": "Auth Routes",
+            "containerId": "",
+            "created": "2023-08-30T08:35:53.874Z",
+            "sortNum": 10000
+        },
+        {
+            "_id": "71ae3f57-21be-4251-9508-d737eff0f320",
+            "name": "User Routes",
+            "containerId": "",
+            "created": "2023-08-30T09:23:29.328Z",
+            "sortNum": 20000
+        },
+        {
+            "_id": "8c3280d8-9038-426c-8c0b-9736f4ce257b",
+            "name": "Product Routes",
+            "containerId": "",
+            "created": "2023-09-02T11:28:52.499Z",
+            "sortNum": 30000
+        }
+    ],
+    "requests": [
+        {
+            "_id": "ab3e68a0-96da-4a1f-95cf-e2e6f803ff01",
+            "colId": "f2c4a1cb-5758-49ed-8310-9e6429cf400a",
+            "containerId": "59983fa2-936e-4af2-9ee6-826472b6c350",
+            "name": "Register",
+            "url": "{{URL}}/api/v1/auth/register",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2023-08-28T09:28:20.066Z",
+            "modified": "2023-09-01T12:40:26.259Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\": \"aslam\",\n  \"email\": \"aslamgmail.com\",\n  \"password\": \"123456\",\n  \"confirmPassword\": \"12345\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "09b9abd7-c893-49a6-84bf-949d33cc8920",
+            "colId": "f2c4a1cb-5758-49ed-8310-9e6429cf400a",
+            "containerId": "59983fa2-936e-4af2-9ee6-826472b6c350",
+            "name": "Login",
+            "url": "{{URL}}/api/v1/auth/login",
+            "method": "POST",
+            "sortNum": 20000,
+            "created": "2023-08-30T07:51:42.774Z",
+            "modified": "2023-09-02T09:01:30.023Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"email\": \"aslam@gmail.com\",\n  \"password\": \"12345678\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "120faac1-d0d2-4378-a20c-2cef1d99a52f",
+            "colId": "f2c4a1cb-5758-49ed-8310-9e6429cf400a",
+            "containerId": "59983fa2-936e-4af2-9ee6-826472b6c350",
+            "name": "Logout",
+            "url": "{{URL}}/api/v1/auth/logout",
+            "method": "GET",
+            "sortNum": 30000,
+            "created": "2023-08-30T08:36:02.800Z",
+            "modified": "2023-08-30T08:36:16.169Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "b84eb3bb-8863-4faa-ac72-a2d73b53e1a0",
+            "colId": "f2c4a1cb-5758-49ed-8310-9e6429cf400a",
+            "containerId": "71ae3f57-21be-4251-9508-d737eff0f320",
+            "name": "Get All Users",
+            "url": "{{URL}}/api/v1/users",
+            "method": "GET",
+            "sortNum": 40000,
+            "created": "2023-08-30T09:23:38.862Z",
+            "modified": "2023-08-30T09:23:55.173Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "a563bc72-fbd0-4700-8dda-993d84306daf",
+            "colId": "f2c4a1cb-5758-49ed-8310-9e6429cf400a",
+            "containerId": "71ae3f57-21be-4251-9508-d737eff0f320",
+            "name": "Get Single User",
+            "url": "{{URL}}/api/v1/users/64f07ea84b2dbcce5869b243",
+            "method": "GET",
+            "sortNum": 50000,
+            "created": "2023-08-30T09:52:47.216Z",
+            "modified": "2023-09-01T12:31:39.425Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "de443b76-ab26-4d7a-b8b7-55d4c59f3c8a",
+            "colId": "f2c4a1cb-5758-49ed-8310-9e6429cf400a",
+            "containerId": "71ae3f57-21be-4251-9508-d737eff0f320",
+            "name": "Show Current User",
+            "url": "{{URL}}/api/v1/users/profile",
+            "method": "GET",
+            "sortNum": 60000,
+            "created": "2023-08-30T11:38:16.894Z",
+            "modified": "2023-08-30T11:38:41.707Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "107bb057-1aee-4e9b-8c32-bc0278cf67cf",
+            "colId": "f2c4a1cb-5758-49ed-8310-9e6429cf400a",
+            "containerId": "71ae3f57-21be-4251-9508-d737eff0f320",
+            "name": "Update User Password",
+            "url": "{{URL}}/api/v1/users/update-password",
+            "method": "PATCH",
+            "sortNum": 70000,
+            "created": "2023-08-30T12:02:13.897Z",
+            "modified": "2023-09-01T12:32:50.391Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"oldPassword\": \"12345678\",\n  \"newPassword\": \"12345678\",\n  \"confirmPassword\": \"12345678\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "2374b794-b087-431c-8a8b-1a925615451d",
+            "colId": "f2c4a1cb-5758-49ed-8310-9e6429cf400a",
+            "containerId": "71ae3f57-21be-4251-9508-d737eff0f320",
+            "name": "Update User",
+            "url": "{{URL}}/api/v1/users/profile",
+            "method": "PATCH",
+            "sortNum": 80000,
+            "created": "2023-09-01T11:37:06.635Z",
+            "modified": "2023-09-01T12:33:30.074Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\": \"furqaan\",\n  \"email\": \"furqaan@gmail.com\"\n}",
+                "form": []
+            },
+            "tests": []
+        }
+    ]
+}

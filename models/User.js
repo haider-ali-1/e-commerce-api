@@ -16,7 +16,7 @@ const userSchema = new Schema(
         validator: function (val) {
           return validator.isEmail(val);
         },
-        message: 'invalid email',
+        message: 'invalid email format',
       },
     },
     password: {

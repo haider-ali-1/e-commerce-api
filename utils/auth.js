@@ -15,10 +15,10 @@ const isValidToken = (token) => {
 };
 
 const attachCookiesToResponse = (res, token) => {
-  const msInOneDay = 24 * 60 * 60 * 1000;
+  const milisecondsInOneDay = 24 * 60 * 60 * 1000;
   res.cookie('token', token, {
-    expires: new Date(Date.now() + msInOneDay),
     httpOnly: true,
+    maxAge: milisecondsInOneDay,
     secure: process.env.NODE_ENV === 'production',
     signed: true,
   });
