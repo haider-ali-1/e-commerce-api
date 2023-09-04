@@ -11,6 +11,12 @@ const authenticateUser = asyncErrorHandler(async (req, res, next) => {
   next();
 });
 
+const checkOwnership = (decodedData, resourceId) => {
+  if (decodedData.userId === resourceId.toString()) return;
+  if (decodedData.role === 'admin') return;
+  throw new ForbiddenError('you dont have permission perform this action');
+};
+
 const authorizePermission = (...roles) =>
   asyncErrorHandler(async (req, res, next) => {
     if (!roles.includes(req.user.role)) {
@@ -19,4 +25,4 @@ const authorizePermission = (...roles) =>
     next();
   });
 
-export { authenticateUser, authorizePermission };
+export { authenticateUser, authorizePermission, checkOwnership };

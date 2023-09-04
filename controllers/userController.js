@@ -7,6 +7,7 @@ import {
   generateJwtToken,
   attachCookiesToResponse,
 } from '../utils/auth.js';
+import { checkOwnership } from '../middleware/authentication.js';
 
 const getAllUsers = asyncErrorHandler(async (req, res, next) => {
   const users = await User.find({ role: 'user' }).select('-password');
@@ -17,12 +18,7 @@ const getSingleUser = asyncErrorHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id);
   if (!user) throw new BadRequestError(`cannot found user with id: ${id}`);
 
-  const checkPermissions = (reqUser, resourseUserId) => {
-    if (reqUser.role === 'admin') return;
-    if (reqUser.userId === resourseUserId.toString()) return;
-    throw new UnathorizedError('you dont have permission');
-  };
-  checkPermissions(req.user, user._id);
+  checkOwnership(req.user, user._id);
 
   res.status(StatusCodes.OK).json({ status: 'success', data: { user } });
 });

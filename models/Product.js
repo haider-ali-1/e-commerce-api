@@ -2,11 +2,17 @@ import mongoose, { Schema, model, mongo } from 'mongoose';
 
 const productSchema = new Schema(
   {
+    user: {
+      type: mongoose.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
     name: {
       type: String,
       required: [true, 'name is required'],
       maxLength: [100, 'name should not be more than 100 characters'],
       trim: true,
+      unique: true,
     },
     price: {
       type: Number,
@@ -63,11 +69,6 @@ const productSchema = new Schema(
       type: Number,
       default: 0,
     },
-    user: {
-      type: mongoose.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
   },
   {
     timestamps: true,
@@ -75,5 +76,17 @@ const productSchema = new Schema(
     toObject: { virtuals: true },
   }
 );
+
+productSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'product',
+});
+
+productSchema.pre('findOneAndDelete', async function (next) {
+  // console.log(this.getPopulatedPaths);
+  // return;
+  // await this.model('Review').deleteMany({ product: this.getPopulatedPaths });
+});
 
 export const Product = model('Product', productSchema);

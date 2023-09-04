@@ -9,7 +9,9 @@ const createProduct = asyncErrorHandler(async (req, res, next) => {
 });
 
 const getSingleProduct = asyncErrorHandler(async (req, res, next) => {
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findById(req.params.id).populate({
+    path: 'reviews',
+  });
   res.status(StatusCodes.OK).json({ status: 'success', data: { product } });
 });
 
@@ -33,7 +35,7 @@ const deleteProduct = asyncErrorHandler(async (req, res, next) => {
 });
 
 const getAllProducts = asyncErrorHandler(async (req, res, next) => {
-  const products = await Product.find();
+  const products = await Product.find({});
   res
     .status(StatusCodes.OK)
     .json({ status: 'success', total: products.length, data: { products } });

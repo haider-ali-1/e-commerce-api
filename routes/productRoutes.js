@@ -1,4 +1,5 @@
 import express from 'express';
+import upload from '../middleware/multer.js';
 import {
   authenticateUser,
   authorizePermission,
@@ -11,9 +12,9 @@ import {
   updateProduct,
   uploadImage,
 } from '../controllers/productController.js';
+import { getSingleProductReviews } from '../controllers/reviewController.js';
 
 const router = express.Router();
-import upload from '../middleware/multer.js';
 
 router
   .route('/')
@@ -35,4 +36,5 @@ router
   .patch(authenticateUser, authorizePermission('admin'), updateProduct)
   .delete(authenticateUser, authorizePermission('admin'), deleteProduct);
 
+router.route('/:id/reviews').get(getSingleProductReviews);
 export default router;
