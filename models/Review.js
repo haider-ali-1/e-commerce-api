@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-const reviewSchema = new Schema(
+const ReviewSchema = new Schema(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -33,6 +33,35 @@ const reviewSchema = new Schema(
   }
 );
 
-const Review = model('Review', reviewSchema);
+ReviewSchema.statics.updateProductStats = async function (productId) {
+  console.log(productId);
+  const Review = this; // this refers to schema model
+  const Product = model('Product');
+  const data = await Review.aggregate([
+    { $match: { product: productId } },
+    {
+      $group: {
+        _id: null,
+        averageRating: { $avg: '$rating' },
+        numOfReviews: { $sum: 1 },
+      },
+    },
+  ]);
+  const { numOfReviews, averageRating } = data[0] || {};
+  const updatedProduct = await Product.findByIdAndUpdate(productId, {
+    numOfReviews,
+    averageRating: Math.ceil(averageRating),
+  });
+};
+
+ReviewSchema.post('findOneAndDelete', async function (doc) {
+  await this.model.updateProductStats(doc.product);
+});
+
+ReviewSchema.post('save', async function (doc) {
+  await this.constructor.updateProductStats(doc.product);
+});
+
+const Review = model('Review', ReviewSchema);
 
 export { Review };

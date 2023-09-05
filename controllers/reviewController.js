@@ -48,6 +48,7 @@ const updateReview = asyncErrorHandler(async (req, res, next) => {
 
 const deleteReview = asyncErrorHandler(async (req, res, next) => {
   const review = await Review.findById(req.params.id);
+
   checkOwnership(req.user, review.user);
 
   await Review.findByIdAndDelete(req.params.id);

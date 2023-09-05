@@ -1,4 +1,5 @@
-import mongoose, { Schema, model, mongo } from 'mongoose';
+import mongoose, { Schema, model } from 'mongoose';
+import { Review } from './Review.js';
 
 const productSchema = new Schema(
   {
@@ -77,16 +78,19 @@ const productSchema = new Schema(
   }
 );
 
+// Virtual Populate - set virtually for getting reviews also
 productSchema.virtual('reviews', {
   ref: 'Review',
   localField: '_id',
   foreignField: 'product',
+  justOne: false,
 });
 
+// Query Middleware
+// remove reviews before delete a product
 productSchema.pre('findOneAndDelete', async function (next) {
-  // console.log(this.getPopulatedPaths);
-  // return;
-  // await this.model('Review').deleteMany({ product: this.getPopulatedPaths });
+  const productId = this.getFilter()._id;
+  await Review.deleteMany({ product: productId });
 });
 
 export const Product = model('Product', productSchema);
