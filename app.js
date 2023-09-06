@@ -3,6 +3,7 @@ import path from 'node:path';
 import express from 'express';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import Stripe from 'stripe';
 
 import { errorHandlerMiddleware } from './middleware/global-error-handler.js';
 import { notFoundMiddleware } from './middleware/not-found.js';
@@ -32,6 +33,20 @@ app.get('/', async (req, res, next) => {
   // const decoded = jwt.verify(req.signedCookies.token, process.env.JWT_SECRET);
   // console.log(req.signedCookies.token);
   // console.log(decoded);
+});
+
+const stripe = new Stripe(
+  'sk_test_51NnGmsGOmMZps5NtBfFmBSFMXcQGzQ4q97nesU3P6qUjRqI2p4RQVWNVZl3l8GdslkyGlRjUVaOOWb4wkPy3mum4003RLx9svh'
+);
+
+app.post('/create-payment-intent', async (req, res, next) => {
+  const items = req.body;
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: 1400,
+    currency: 'usd',
+  });
+
+  res.status(201).json({ clientSecret: paymentIntent.client_secret });
 });
 
 app.all('*', notFoundMiddleware);

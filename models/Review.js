@@ -35,7 +35,7 @@ const ReviewSchema = new Schema(
 
 ReviewSchema.statics.updateProductStats = async function (productId) {
   console.log(productId);
-  const Review = this; // this refers to schema model
+  const Review = this; // this refers to Model
   const Product = model('Product');
   const data = await Review.aggregate([
     { $match: { product: productId } },
@@ -48,18 +48,18 @@ ReviewSchema.statics.updateProductStats = async function (productId) {
     },
   ]);
   const { numOfReviews, averageRating } = data[0] || {};
-  const updatedProduct = await Product.findByIdAndUpdate(productId, {
+  await Product.findByIdAndUpdate(productId, {
     numOfReviews,
     averageRating: Math.ceil(averageRating),
   });
 };
 
 ReviewSchema.post('findOneAndDelete', async function (doc) {
-  await this.model.updateProductStats(doc.product);
+  await this.model.updateProductStats(doc.product); // this refers to Query Object
 });
 
 ReviewSchema.post('save', async function (doc) {
-  await this.constructor.updateProductStats(doc.product);
+  await this.constructor.updateProductStats(doc.product); // this refers to Document
 });
 
 const Review = model('Review', ReviewSchema);
