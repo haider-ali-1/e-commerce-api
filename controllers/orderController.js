@@ -6,41 +6,39 @@ import { StatusCodes } from 'http-status-codes';
 
 const createOrder = asyncErrorHandler(async (req, res, next) => {
   // tax, shippingFee, items, totalAmount
-  const { tax, shippingFee, cartItems } = req.body;
+  const { tax, shippingFee, orderItems: cartItems } = req.body;
 
-  let orderItems = [];
-  let totalAmount = 0;
+  const orderItems = await Promise.all(
+    cartItems.map(async (orderItem) => {
+      const product = await Product.findById(orderItem.product);
+      if (!product)
+        throw new BadRequestError(
+          `cannot find product with id: ${item.product}`
+        );
+      const { name, image, price, _id } = product;
 
-  for (const item of cartItems) {
-    //check if product exist
-    const product = await Product.findById(item.product);
-    if (!product)
-      throw new BadRequestError(`cannot find product with id: ${item.product}`);
+      const quantity = orderItem.quantity;
+      return {
+        name,
+        image,
+        price,
+        quantity,
+        subTotal: price * quantity,
+        product: _id,
+      };
+    })
+  );
 
-    // get products props
-    const { name, image, price, _id } = product;
-
-    const quantity = item.quantity;
-
-    const orderItem = {
-      name,
-      image,
-      price,
-      quantity,
-      subTotal: price * quantity,
-      product: _id,
-    };
-
-    orderItems.push(orderItem);
-    totalAmount += orderItem.subTotal;
-  }
+  const totalAmount = orderItems.reduce((acc, current) => {
+    return acc + current.subTotal;
+  }, tax + shippingFee);
 
   const order = await Order.create({
     user: req.user.userId,
     tax,
     shippingFee,
     orderItems,
-    totalAmount: (totalAmount + tax + shippingFee).toFixed(2),
+    totalAmount,
     paymentIntentId: 'blahblah',
   });
 
