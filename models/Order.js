@@ -1,20 +1,66 @@
-import mongoose, { Schema, model, Model } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-const orderSchema = new Schema({
-  tax: {
+const productSchema = new Schema({
+  product: {
+    type: Schema.Types.ObjectId,
+    ref: 'Product',
+    required: true,
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+  image: {
+    type: String,
+    required: true,
+  },
+  quantity: {
+    type: Number,
+    required: true,
+  },
+  subTotal: {
     type: Number,
     required: true,
   },
 });
 
-orderSchema.statics.calculateShippingFee = function (order) {
-  console.log(order);
-  return order.tax;
-};
+const orderSchema = new Schema(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    tax: {
+      type: Number,
+      required: true,
+    },
+    shippingFee: {
+      type: Number,
+      required: true,
+    },
+    orderItems: [productSchema],
+    status: {
+      type: String,
+      enum: ['pending', 'processing', 'completed'],
+      default: 'pending',
+    },
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+    paymentIntentId: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-const Order = model('Order', orderSchema);
-
-const order = new Order({ tax: 15 });
-
-const shippingTax = await Order.calculateShippingFee(order);
-console.log(shippingTax);
+export const Order = model('Order', orderSchema);

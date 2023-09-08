@@ -12,6 +12,7 @@ import authRouter from './routes/authRoutes.js';
 import userRouter from './routes/userRoutes.js';
 import productRouter from './routes/productRoutes.js';
 import reviewRouter from './routes/reviewRoutes.js';
+import orderRouter from './routes/orderRoutes.js';
 
 const app = express();
 
@@ -28,26 +29,13 @@ app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/products', productRouter);
 app.use('/api/v1/reviews', reviewRouter);
+app.use('/api/v1/orders', orderRouter);
 
-app.get('/', async (req, res, next) => {
-  // const decoded = jwt.verify(req.signedCookies.token, process.env.JWT_SECRET);
-  // console.log(req.signedCookies.token);
-  // console.log(decoded);
-});
-
-const stripe = new Stripe(
-  'sk_test_51NnGmsGOmMZps5NtBfFmBSFMXcQGzQ4q97nesU3P6qUjRqI2p4RQVWNVZl3l8GdslkyGlRjUVaOOWb4wkPy3mum4003RLx9svh'
-);
-
-app.post('/create-payment-intent', async (req, res, next) => {
-  const items = req.body;
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: 1400,
-    currency: 'usd',
-  });
-
-  res.status(201).json({ clientSecret: paymentIntent.client_secret });
-});
+// app.get('/', async (req, res, next) => {
+// const decoded = jwt.verify(req.signedCookies.token, process.env.JWT_SECRET);
+// console.log(req.signedCookies.token);
+// console.log(decoded);
+// });
 
 app.all('*', notFoundMiddleware);
 app.use(errorHandlerMiddleware);

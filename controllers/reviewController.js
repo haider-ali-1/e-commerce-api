@@ -78,7 +78,7 @@ const getAllReviews = asyncErrorHandler(async (req, res, next) => {
 
 // @ get single product reviews
 // @ GET /api/v1/products/:id/reviews
-// Inside productRoutes.js
+// @ Use Inside productRoutes.js
 
 const getSingleProductReviews = asyncErrorHandler(async (req, res, next) => {
   const productId = req.params.id;

@@ -2,7 +2,6 @@
 const stripe = Stripe(
   'pk_test_51NnGmsGOmMZps5NtqvDoFlKGn4UhOuZ3dhNlUUGWP5h0weCPhSRRd89zjhSxYnlRS5E9a26rv4U1zDizbt63j3uy00X5vWIepA'
 );
-
 // The items the customer wants to buy
 const items = [{ id: 'xl-tshirt' }];
 
@@ -53,7 +52,7 @@ async function handleSubmit(e) {
     elements,
     confirmParams: {
       // Make sure to change this to your payment completion page
-      return_url: 'http://localhost:4242/checkout.html',
+      return_url: 'http://127.0.0.1:3001/index.html',
       receipt_email: emailAddress,
     },
   });
