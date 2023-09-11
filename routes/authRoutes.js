@@ -1,5 +1,12 @@
 import express from 'express';
-import { login, logout, register } from '../controllers/authController.js';
+import {
+  forgotPassword,
+  login,
+  logout,
+  register,
+  resetPassword,
+  verifyEmail,
+} from '../controllers/authController.js';
 
 const router = express.Router();
 
@@ -8,5 +15,8 @@ const router = express.Router();
 router.post('/register', register);
 router.post('/login', login);
 router.get('/logout', logout);
+router.post('/verify-email/:token', verifyEmail);
+router.post('/forgot-password', forgotPassword);
+router.patch('/reset-password/:token', resetPassword);
 
 export default router;

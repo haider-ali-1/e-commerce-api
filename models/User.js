@@ -1,3 +1,5 @@
+import crypto from 'node:crypto';
+
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
 import validator from 'validator';
@@ -30,6 +32,13 @@ const userSchema = new Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
+    verificationToken: String,
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    passwordResetToken: String,
+    passwordResetTokenExpires: Date,
   },
   {
     timestamps: true,
