@@ -24,8 +24,13 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     errorMessage = `${field} already taken please try another`;
   }
 
+  // node-mailer error
+  else if (err.errno === -3008) {
+    errorMessage = 'error occured for sending email';
+  }
+
   // main error response
-  const errorResponse = { status, message: errorMessage };
+  const errorResponse = { errorName: err.name, status, message: errorMessage };
 
   // only for development mode
   if (process.env.NODE_ENV === 'development') {

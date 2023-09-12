@@ -1,10 +1,11 @@
 import { StatusCodes } from 'http-status-codes';
 import { asyncErrorHandler } from '../middleware/async-error-handler.js';
 import { Product } from '../models/Product.js';
+import { BadRequestError } from '../utils/custom-errors.js';
 
 const createProduct = asyncErrorHandler(async (req, res, next) => {
-  req.body.user = req.user.userId;
-  const product = await Product.create(req.body);
+  const { userId } = req.user;
+  const product = await Product.create({ ...req.body, user: userId });
   res.status(StatusCodes.OK).json({ status: 'success', data: { product } });
 });
 
@@ -12,6 +13,9 @@ const getSingleProduct = asyncErrorHandler(async (req, res, next) => {
   const product = await Product.findById(req.params.id).populate({
     path: 'reviews',
   });
+
+  if (!product) throw new BadRequestError('invalid product id');
+
   res.status(StatusCodes.OK).json({ status: 'success', data: { product } });
 });
 

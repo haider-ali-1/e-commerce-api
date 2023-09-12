@@ -37,6 +37,12 @@ class ConflictError extends CustomError {
   }
 }
 
+class InternalServerError extends CustomError {
+  constructor(message = 'Internal Server Error') {
+    super(message, 500);
+  }
+}
+
 const generateCustomErrorStack = (stack) => {
   const lines = stack.split('\n');
   const [stackErrorMessage, ...fileLines] = lines.map((line) => line.trim());
@@ -56,5 +62,6 @@ export {
   UnathorizedError,
   ForbiddenError,
   ConflictError,
+  InternalServerError,
   generateCustomErrorStack,
 };

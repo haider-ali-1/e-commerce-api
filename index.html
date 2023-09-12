@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      const fetchProducts = async () => {
+        try {
+          const response = await fetch(
+            'http://127.0.0.1:3001/api/v1/products',
+            { method: 'get' }
+          );
+          const data = await response.json();
+          console.log(data);
+        } catch (error) {
+          console.log(error.message);
+        }
+      };
+      fetchProducts();
+    </script>
+  </body>
+</html>

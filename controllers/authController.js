@@ -7,7 +7,12 @@ import {
   attachCookiesToResponse,
 } from '../utils/auth.js';
 
-import { BadRequestError, UnathorizedError } from '../utils/custom-errors.js';
+import {
+  BadRequestError,
+  UnathorizedError,
+  ConflictError,
+  InternalServerError,
+} from '../utils/custom-errors.js';
 import { sendEmail } from '../utils/sendEmail.js';
 import { compareValues, generateCryptoToken } from '../utils/helpers.js';
 
@@ -21,38 +26,45 @@ const register = asyncErrorHandler(async (req, res, next) => {
     throw new BadRequestError('confirm password must match with password');
 
   const isUserExists = await User.findOne({ email });
-  if (isUserExists) throw new ConflictError(`user already exist`);
+  if (isUserExists)
+    throw new ConflictError(`user with that email already exist`);
 
   const isFirstUser = (await User.countDocuments()) === 0;
   const role = isFirstUser ? 'admin' : 'user';
 
-  const user = await User.create({
-    name,
-    email,
-    password,
-    role,
-    verificationToken: generateCryptoToken(),
-  });
+  const verificationToken = generateCryptoToken();
 
   const emailBody = {
     body: {
-      name: user.name,
+      name,
       intro: 'welcome to our app',
       action: {
         instructions: 'to verify your email please click below the button',
         button: {
           color: '#22BC66', // Optional action button color
           text: 'verify your email',
-          link: `${req.protocol}:${req.hostname}/api/v1/auth/verify-email/${user.verificationToken}`,
+          link: `${req.protocol}:${req.hostname}/api/v1/auth/verify-email/${verificationToken}`,
         },
       },
     },
   };
 
-  await sendEmail({
-    to: user.email,
-    subject: 'email verification link',
-    emailBody,
+  try {
+    await sendEmail({
+      to: email,
+      subject: 'email verification link',
+      emailBody,
+    });
+  } catch (error) {
+    throw new InternalServerError('could not send email');
+  }
+
+  const user = await User.create({
+    name,
+    email,
+    password,
+    role,
+    verificationToken,
   });
 
   // const newUser = await User.create({ name, email, password, role });
@@ -63,6 +75,7 @@ const register = asyncErrorHandler(async (req, res, next) => {
   res.status(StatusCodes.CREATED).json({
     status: 'success',
     message: 'please check your email to verify account',
+    token: user.verificationToken,
   });
 });
 
@@ -70,11 +83,11 @@ const register = asyncErrorHandler(async (req, res, next) => {
 // @ POST /api/v1/auth/verify-email/:token
 
 const verifyEmail = asyncErrorHandler(async (req, res, next) => {
-  const token = req.params.token;
-  const user = await User.findOne({ verificationToken: token });
+  const { token: verificationToken } = req.params;
+  const user = await User.findOne({ verificationToken });
 
   // if user exist but token is invalid
-  if (!user || user.verificationToken !== token)
+  if (!user || user.verificationToken !== verificationToken)
     throw new UnathorizedError('verification failed');
 
   user.isVerified = true;
@@ -86,19 +99,27 @@ const verifyEmail = asyncErrorHandler(async (req, res, next) => {
     .json({ status: 'success', message: 'your email is verified now' });
 });
 
+// @ register user
+// @ POST /api/v1/auth/login
+
 const login = asyncErrorHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
+  // if email or password is missing
   if (!email || !password)
     throw new BadRequestError('email and password are required');
 
+  // if user not found
   const user = await User.findOne({ email });
   if (!user) throw new UnathorizedError('user do not exist');
 
+  // if password is not match with hashed password
   const passwordMatch = await user.comparePassword(password);
-
   if (!passwordMatch)
     throw new UnathorizedError('incorrect username or password');
+
+  // if user not verified
+  if (!user.isVerified) throw new UnathorizedError('please verify your email');
 
   const payload = createPayloadUser(user);
   const token = generateJwtToken(payload);
@@ -108,6 +129,9 @@ const login = asyncErrorHandler(async (req, res, next) => {
     .status(StatusCodes.OK)
     .json({ status: 'success', data: { user: payload }, token });
 });
+
+// @ register user
+// @ POST /api/v1/auth/logout
 
 const logout = asyncErrorHandler(async (req, res, next) => {
   res.cookie('token', 'logout', {
@@ -127,17 +151,16 @@ const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   const user = await User.findOne({ email });
   if (!user) throw new BadRequestError('user with that email do not exist');
 
-  const token = generateCryptoToken();
+  const passwordResetToken = generateCryptoToken();
 
-  user.passwordResetToken = token;
+  user.passwordResetToken = passwordResetToken;
   user.passwordResetTokenExpires = new Date(Date.now() + 5 * 60 * 1000);
   await user.save();
 
   // generating reset password link
   const protocol = req.protocol;
   const hostname = req.get('host');
-  const passwordResetToken = user.passwordResetToken;
-  const passwordResetURL = `${protocol}://${hostname}/api/v1/auth/forgot-password/${passwordResetToken}`;
+  const passwordResetURL = `${protocol}://${hostname}/api/v1/auth/forgot-password/${user.passwordResetToken}`;
 
   // generate email html
   const emailBody = {
@@ -166,9 +189,12 @@ const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   res.status(StatusCodes.OK).json({
     status: 'success',
     message: 'please check your email for reset password',
-    data: { token },
+    data: { passwordResetToken },
   });
 });
+
+// @ forgot password
+// @ /api/v1/auth/reset-password/:token
 
 const resetPassword = asyncErrorHandler(async (req, res, next) => {
   const { token } = req.params;
