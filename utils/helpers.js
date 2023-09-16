@@ -24,8 +24,8 @@ const compareValues = (val1, val2) => {
 
 // create payload
 const createPayload = (user) => {
-  const { _id, name, role } = user;
-  return { userId: _id, name, role };
+  const { userId, name, role } = user;
+  return { userId, name, role };
 };
 
 // sign JWT

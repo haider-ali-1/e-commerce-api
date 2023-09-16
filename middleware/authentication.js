@@ -22,17 +22,23 @@ const authenticateUser = asyncErrorHandler(async (req, res, next) => {
   // check if refresh token is valid - when access token expire
   if (refresh_token) {
     console.log('access_token expired');
-
+    // get userId, refreshToken info from refresh token
     const decodedInfo = verifyJWT(refresh_token, process.env.JWT_SECRET);
-    const { userId, name, role, refreshToken } = decodedInfo;
-    const validToken = await Token.findOne({ user: userId, refreshToken });
 
-    if (!validToken) throw new UnathorizedError('please login');
+    // check if userId and RT correct
+    const validToken = await Token.findOne({
+      user: decodedInfo.userId,
+      refreshToken: decodedInfo.refreshToken,
+    });
 
-    // sign jwt for access token
+    if (!validToken)
+      throw new UnathorizedError('accessing account using wrong ids');
+
+    // generate access token info user
     const jwtSecret = process.env.JWT_SECRET;
     const accessToken = signJWT(createPayload(decodedInfo), jwtSecret, 1 * 60);
 
+    // attach cookie to header again for auth
     attachCookie(res, 'access_token', accessToken, 1 * 60 * 1000);
 
     req.user = decodedInfo;

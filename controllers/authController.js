@@ -150,6 +150,7 @@ const login = asyncErrorHandler(async (req, res, next) => {
 
   const payload = createPayload(user);
   const payloadWithRT = { ...payload, refreshToken: hashedToken };
+
   const jwtSecret = process.env.JWT_SECRET;
 
   const accessToken = signJWT(payload, jwtSecret, 1 * 60);

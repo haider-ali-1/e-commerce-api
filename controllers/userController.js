@@ -25,6 +25,7 @@ const getSingleUser = asyncErrorHandler(async (req, res, next) => {
 
 const showCurrentUser = asyncErrorHandler(async (req, res, next) => {
   const user = await User.findById(req.user.userId);
+  if (!user) throw new UnathorizedError('cannot found user');
   res
     .status(StatusCodes.OK)
     .json({ status: 'success', data: { user: req.user } });
