@@ -9,7 +9,7 @@ import helmet from 'helmet';
 import { errorHandlerMiddleware } from './middleware/global-error-handler.js';
 import { notFoundMiddleware } from './middleware/not-found.js';
 import { getDirName } from './utils/helpers.js';
-import { corsOptions } from './configs/cors-options.js';
+import { corsOptions } from './config/cors-options.js';
 
 import authRouter from './routes/authRoutes.js';
 import userRouter from './routes/userRoutes.js';

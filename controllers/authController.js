@@ -1,6 +1,7 @@
 import { User } from '../models/User.js';
 import { asyncErrorHandler } from '../middleware/async-error-handler.js';
 import { StatusCodes } from 'http-status-codes';
+import { Token } from '../models/Token.js';
 import {
   createPayloadUser,
   generateJwtToken,
@@ -14,7 +15,15 @@ import {
   InternalServerError,
 } from '../utils/custom-errors.js';
 import { sendEmail } from '../utils/sendEmail.js';
-import { compareValues, generateCryptoToken } from '../utils/helpers.js';
+import {
+  attachCookie,
+  compareValues,
+  createPayload,
+  generateCryptoToken,
+  signJWT,
+} from '../utils/helpers.js';
+import jwt from 'jsonwebtoken';
+import { configValues } from '../config/app-config.js';
 
 // @ register user
 // @ POST /api/v1/auth/register
@@ -109,8 +118,9 @@ const login = asyncErrorHandler(async (req, res, next) => {
   if (!email || !password)
     throw new BadRequestError('email and password are required');
 
-  // if user not found
   const user = await User.findOne({ email });
+
+  // if user not found
   if (!user) throw new UnathorizedError('user do not exist');
 
   // if password is not match with hashed password
@@ -121,23 +131,57 @@ const login = asyncErrorHandler(async (req, res, next) => {
   // if user not verified
   if (!user.isVerified) throw new UnathorizedError('please verify your email');
 
-  const payload = createPayloadUser(user);
-  const token = generateJwtToken(payload);
-  attachCookiesToResponse(res, token);
+  // generate hashed token for refresh jwt token
+  let hashedToken = generateCryptoToken();
 
-  res
-    .status(StatusCodes.OK)
-    .json({ status: 'success', data: { user: payload }, token });
+  const token = await Token.findOne({ user: user._id });
+
+  if (token) {
+    if (!token.isValid) throw new UnathorizedError('suspecious activity');
+    hashedToken = token.refreshToken;
+  } else {
+    await Token.create({
+      user: user._id,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      refreshToken: hashedToken,
+    });
+  }
+
+  const payload = createPayload(user);
+  const payloadWithRT = { ...payload, refreshToken: hashedToken };
+  const jwtSecret = process.env.JWT_SECRET;
+
+  const accessToken = signJWT(payload, jwtSecret, 1 * 60);
+  const refreshToken = signJWT(payloadWithRT, jwtSecret, 24 * 60 * 60);
+
+  attachCookie(res, 'access_token', accessToken, 1 * 60 * 1000);
+  attachCookie(res, 'refresh_token', refreshToken, 24 * 60 * 60 * 1000);
+
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    data: { user: payload },
+    accessToken,
+    refreshToken,
+  });
 });
 
 // @ register user
 // @ POST /api/v1/auth/logout
 
 const logout = asyncErrorHandler(async (req, res, next) => {
-  res.cookie('token', 'logout', {
+  await Token.findOneAndDelete({ user: req.user.userId });
+
+  res.cookie('access_token', 'logout', {
     expires: new Date(Date.now() + 1000),
     httpOnly: true,
   });
+
+  res.cookie('refresh_token', 'logout', {
+    expires: new Date(Date.now() + 1000),
+    httpOnly: true,
+  });
+
   res
     .status(StatusCodes.OK)
     .json({ status: 'success', message: 'logout successfully' });
