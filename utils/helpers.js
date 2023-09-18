@@ -8,13 +8,14 @@ import { userInfo } from 'node:os';
 const getDirName = (metaURL) => dirname(fileURLToPath(metaURL));
 
 // generate crypto token
-const generateCryptoToken = () => {
-  const randomString = crypto.randomBytes(32).toString('hex');
+const generateCryptoToken = (randomBytesString) => {
+  const randomString =
+    randomBytesString || crypto.randomBytes(32).toString('hex');
   const hashedToken = crypto
     .createHmac('sha256', process.env.CRYPTO_SECRET_KEY)
     .update(randomString)
     .digest('hex');
-  return hashedToken;
+  return { randomString, hashedToken };
 };
 
 // compare

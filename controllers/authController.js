@@ -196,16 +196,16 @@ const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   const user = await User.findOne({ email });
   if (!user) throw new BadRequestError('user with that email do not exist');
 
-  const passwordResetToken = generateCryptoToken();
+  const { randomString, hashedToken } = generateCryptoToken();
 
-  user.passwordResetToken = passwordResetToken;
+  user.passwordResetToken = hashedToken;
   user.passwordResetTokenExpires = new Date(Date.now() + 5 * 60 * 1000);
   await user.save();
 
   // generating reset password link
   const protocol = req.protocol;
   const hostname = req.get('host');
-  const passwordResetURL = `${protocol}://${hostname}/api/v1/auth/forgot-password/${user.passwordResetToken}`;
+  const passwordResetURL = `${protocol}://${hostname}/api/v1/auth/forgot-password/${randomString}`;
 
   // generate email html
   const emailBody = {
@@ -234,7 +234,7 @@ const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   res.status(StatusCodes.OK).json({
     status: 'success',
     message: 'please check your email for reset password',
-    data: { passwordResetToken },
+    data: { randomString },
   });
 });
 
@@ -248,7 +248,7 @@ const resetPassword = asyncErrorHandler(async (req, res, next) => {
   if (!isSame) throw new BadRequestError('confirm password do not match');
 
   const user = await User.findOne({
-    passwordResetToken: token,
+    passwordResetToken: generateCryptoToken(token)['hashedToken'],
     passwordResetTokenExpires: { $gte: new Date() },
   });
 
