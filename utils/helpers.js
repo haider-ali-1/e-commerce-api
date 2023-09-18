@@ -25,18 +25,19 @@ const compareValues = (val1, val2) => {
 
 // create payload
 const createPayload = (user) => {
-  const { userId, name, role } = user;
-  return { userId, name, role };
+  return { userId: user._id, name: user.name, role: user.role };
 };
 
 // sign JWT
-const signJWT = (payload, secretKey, expireTimeInSeconds) => {
-  return jwt.sign(payload, secretKey, { expiresIn: expireTimeInSeconds });
+const signJWT = (payload, expireTimeInSeconds) => {
+  return jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: expireTimeInSeconds,
+  });
 };
 
 // verify Token
-const verifyJWT = (token, secretKey) => {
-  return jwt.verify(token, secretKey);
+const verifyJWT = (token) => {
+  return jwt.verify(token, process.env.JWT_SECRET);
 };
 
 // attach cookie to header
@@ -49,6 +50,31 @@ const attachCookie = (res, name, value, expireTimeInMilliseconds) => {
   });
 };
 
+const attachCookies = (res, user, hashedToken) => {
+  const payload = createPayload(user);
+  const accessToken = signJWT(payload, 1 * 60);
+  const refreshToken = signJWT(
+    { ...payload, refreshToken: hashedToken },
+    24 * 60 * 60
+  );
+
+  res.cookie('access_token', accessToken, {
+    httpOnly: true,
+    maxAge: 1 * 60 * 1000,
+    signed: true,
+    secure: process.env.NODE_ENV === 'production',
+  });
+
+  res.cookie('refresh_token', refreshToken, {
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000,
+    signed: true,
+    secure: process.env.NODE_ENV === 'production',
+  });
+
+  return { payload };
+};
+
 export {
   getDirName,
   generateCryptoToken,
@@ -57,4 +83,5 @@ export {
   signJWT,
   verifyJWT,
   attachCookie,
+  attachCookies,
 };

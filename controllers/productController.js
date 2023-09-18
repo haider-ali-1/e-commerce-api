@@ -5,6 +5,7 @@ import { BadRequestError } from '../utils/custom-errors.js';
 
 const createProduct = asyncErrorHandler(async (req, res, next) => {
   const { userId } = req.user;
+
   const product = await Product.create({ ...req.body, user: userId });
   res.status(StatusCodes.OK).json({ status: 'success', data: { product } });
 });

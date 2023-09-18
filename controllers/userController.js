@@ -8,6 +8,13 @@ import {
   attachCookiesToResponse,
 } from '../utils/auth.js';
 import { checkOwnership } from '../middleware/authentication.js';
+import {
+  attachCookie,
+  attachCookies,
+  createPayload,
+  signJWT,
+} from '../utils/helpers.js';
+import { Token } from '../models/Token.js';
 
 const getAllUsers = asyncErrorHandler(async (req, res, next) => {
   const users = await User.find({ role: 'user' }).select('-password');
@@ -62,13 +69,13 @@ const updateUser = asyncErrorHandler(async (req, res, next) => {
     { new: true, runValidators: true }
   );
 
-  const payload = createPayloadUser(updatedUser);
-  const token = generateJwtToken(payload);
-  attachCookiesToResponse(res, token);
+  const token = await Token.findOne({ user: updatedUser._id });
+
+  const { payload } = attachCookies(res, updatedUser, token.refreshToken);
 
   res
     .status(StatusCodes.OK)
-    .json({ status: 'success', data: { user: req.user } });
+    .json({ status: 'success', data: { user: payload } });
 });
 
 export {

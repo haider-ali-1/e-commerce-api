@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import { configValues } from '../config/app-config.js';
 import {
   attachCookie,
+  attachCookies,
   createPayload,
   signJWT,
   verifyJWT,
@@ -14,34 +15,26 @@ import {
 const authenticateUser = asyncErrorHandler(async (req, res, next) => {
   const { access_token, refresh_token } = req.signedCookies;
 
+  // extract info from access_token
   if (access_token) {
-    const decodedInfo = verifyJWT(access_token, process.env.JWT_SECRET);
-    req.user = decodedInfo;
+    const decodedData = verifyJWT(access_token);
+    req.user = decodedData;
     return next();
   }
-  // check if refresh token is valid - when access token expire
+
   if (refresh_token) {
     console.log('access_token expired');
-    // get userId, refreshToken info from refresh token
-    const decodedInfo = verifyJWT(refresh_token, process.env.JWT_SECRET);
 
-    // check if userId and RT correct
-    const validToken = await Token.findOne({
-      user: decodedInfo.userId,
-      refreshToken: decodedInfo.refreshToken,
-    });
+    const { userId, name, role, refreshToken } = verifyJWT(refresh_token);
 
-    if (!validToken)
-      throw new UnathorizedError('accessing account using wrong ids');
+    const token = await Token.findOne({ user: userId, refreshToken });
+    if (!token || !token?.isValid)
+      throw new UnathorizedError('authentication invalid');
 
-    // generate access token info user
-    const jwtSecret = process.env.JWT_SECRET;
-    const accessToken = signJWT(createPayload(decodedInfo), jwtSecret, 1 * 60);
+    const payload = { _id: userId, name, role };
 
-    // attach cookie to header again for auth
-    attachCookie(res, 'access_token', accessToken, 1 * 60 * 1000);
-
-    req.user = decodedInfo;
+    attachCookies(res, payload, refreshToken);
+    req.user = verifyJWT(refresh_token);
     return next();
   }
 

@@ -22,7 +22,7 @@ const attachCookiesToResponse = ({ res, accessToken, refreshToken }) => {
   // attach access token to header
   res.cookie('access_token', accessToken, {
     httpOnly: true,
-    maxAge: 1 * 60 * 1000, // 15 minutes
+    maxAge: 1 * 60, // 1 minute
     secure: process.env.NODE_ENV === 'production',
     signed: true,
   });

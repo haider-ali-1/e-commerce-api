@@ -24,20 +24,4 @@ router.route('/:id').get(getSingleUser);
 router.use(authorizePermission('admin'));
 router.route('/').get(getAllUsers);
 
-// router
-//   .route('/') //
-//   .get(authenticateUser, authorizePermission('admin'), getAllUsers);
-
-// router
-//   .route('/profile') //
-//   .get(authenticateUser, showCurrentUser);
-
-// router
-//   .route('/:id') //
-//   .get(getSingleUser);
-
-// router
-//   .route('/update-password') //
-//   .patch(authenticateUser, updateUserPassword);
-
 export default router;

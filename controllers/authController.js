@@ -17,13 +17,12 @@ import {
 import { sendEmail } from '../utils/sendEmail.js';
 import {
   attachCookie,
+  attachCookies,
   compareValues,
   createPayload,
   generateCryptoToken,
   signJWT,
 } from '../utils/helpers.js';
-import jwt from 'jsonwebtoken';
-import { configValues } from '../config/app-config.js';
 
 // @ register user
 // @ POST /api/v1/auth/register
@@ -41,7 +40,7 @@ const register = asyncErrorHandler(async (req, res, next) => {
   const isFirstUser = (await User.countDocuments()) === 0;
   const role = isFirstUser ? 'admin' : 'user';
 
-  const verificationToken = generateCryptoToken();
+  const { randomString, hashedToken } = generateCryptoToken();
 
   const emailBody = {
     body: {
@@ -52,7 +51,7 @@ const register = asyncErrorHandler(async (req, res, next) => {
         button: {
           color: '#22BC66', // Optional action button color
           text: 'verify your email',
-          link: `${req.protocol}:${req.hostname}/api/v1/auth/verify-email/${verificationToken}`,
+          link: `${req.protocol}:${req.hostname}/api/v1/auth/verify-email/${hashedToken}`,
         },
       },
     },
@@ -73,18 +72,13 @@ const register = asyncErrorHandler(async (req, res, next) => {
     email,
     password,
     role,
-    verificationToken,
+    verificationToken: hashedToken,
   });
-
-  // const newUser = await User.create({ name, email, password, role });
-  // const payload = createPayloadUser(newUser);
-  // const token = generateJwtToken(payload);
-  // attachCookiesToResponse(res, token);
 
   res.status(StatusCodes.CREATED).json({
     status: 'success',
     message: 'please check your email to verify account',
-    token: user.verificationToken,
+    token: randomString,
   });
 });
 
@@ -92,11 +86,12 @@ const register = asyncErrorHandler(async (req, res, next) => {
 // @ POST /api/v1/auth/verify-email/:token
 
 const verifyEmail = asyncErrorHandler(async (req, res, next) => {
-  const { token: verificationToken } = req.params;
-  const user = await User.findOne({ verificationToken });
+  const { token } = req.params;
+  const { hashedToken } = generateCryptoToken(token);
+  const user = await User.findOne({ verificationToken: hashedToken });
 
   // if user exist but token is invalid
-  if (!user || user.verificationToken !== verificationToken)
+  if (!user || user.verificationToken !== hashedToken)
     throw new UnathorizedError('verification failed');
 
   user.isVerified = true;
@@ -119,7 +114,6 @@ const login = asyncErrorHandler(async (req, res, next) => {
     throw new BadRequestError('email and password are required');
 
   const user = await User.findOne({ email });
-
   // if user not found
   if (!user) throw new UnathorizedError('user do not exist');
 
@@ -132,12 +126,13 @@ const login = asyncErrorHandler(async (req, res, next) => {
   if (!user.isVerified) throw new UnathorizedError('please verify your email');
 
   // generate hashed token for refresh jwt token
-  let hashedToken = generateCryptoToken();
+  let { hashedToken } = generateCryptoToken();
 
   const token = await Token.findOne({ user: user._id });
 
   if (token) {
-    if (!token.isValid) throw new UnathorizedError('suspecious activity');
+    if (!token.isValid)
+      throw new UnathorizedError('you are not allowed to login');
     hashedToken = token.refreshToken;
   } else {
     await Token.create({
@@ -147,23 +142,12 @@ const login = asyncErrorHandler(async (req, res, next) => {
       refreshToken: hashedToken,
     });
   }
-
-  const payload = createPayload(user);
-  const payloadWithRT = { ...payload, refreshToken: hashedToken };
-
-  const jwtSecret = process.env.JWT_SECRET;
-
-  const accessToken = signJWT(payload, jwtSecret, 1 * 60);
-  const refreshToken = signJWT(payloadWithRT, jwtSecret, 24 * 60 * 60);
-
-  attachCookie(res, 'access_token', accessToken, 1 * 60 * 1000);
-  attachCookie(res, 'refresh_token', refreshToken, 24 * 60 * 60 * 1000);
+  // attach access_token and refresh_token in headers
+  const { payload } = attachCookies(res, user, hashedToken);
 
   res.status(StatusCodes.OK).json({
     status: 'success',
     data: { user: payload },
-    accessToken,
-    refreshToken,
   });
 });
 
